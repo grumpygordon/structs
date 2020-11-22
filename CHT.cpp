@@ -1,56 +1,44 @@
-struct cht {
-    vector<pair<int, ll> > q;
-    vector<pair<ll, ll> > p;
-    void add(int k, ll b) {
-        q.push_back({k, b});
-    }
+//source: https://github.com/kth-competitive-programming/kactl/blob/master/content/data-structures/LineContainer.h
 
-    pair<ll, ll> inter(pair<int, ll> a, pair<int, ll> b) {
-        return {b.sc - a.sc, a.fr - b.fr};
-    }
+/**
+ * Author: Simon Lindholm
+ * Date: 2017-04-20
+ * License: CC0
+ * Source: own work
+ * Description: Container where you can add lines of the form kx+m, and query maximum values at points x.
+ *  Useful for dynamic programming (``convex hull trick'').
+ * Time: O(\log N)
+ * Status: stress-tested
+ */
+#pragma once
 
-    bool more(pair<ll, ll> a, pair<ll, ll> b) {
-        return a.fr / (ld)a.sc > b.fr / (ld)b.sc;
-    }
+struct Line {
+	mutable ll k, m, p;
+	bool operator<(const Line& o) const { return k < o.k; }
+	bool operator<(ll x) const { return p < x; }
+};
 
-    bool moeq(pair<ll, ll> a, pair<ll, ll> b) {
-        return a.fr / (ld)a.sc >= b.fr / (ld)b.sc;
-    }
-
-    void prec() {
-        sort(q.begin(), q.end());
-        vector<pair<int, ll> > g;
-        for (auto it : q) {
-            if (g.empty()) {
-                g.push_back(it);
-                continue;
-            }
-            while (!g.empty()) {
-                if (g.back().fr == it.fr || (g.size() > 1 && moeq(p.back(), inter(g.back(), it)))) {
-                    g.pop_back();
-                    if (!g.empty())
-                        p.pop_back();
-                } else
-                    break;
-            }
-            if (!g.empty())
-                p.push_back(inter(g.back(), it));
-            g.push_back(it);
-        }
-        swap(q, g);
-    }
-
-    ll get(int w) {
-        if (q.empty())
-            return 0;
-        int l = -1, r = q.size() - 1;
-        while (r - l > 1) {
-            int m = (l + r) / 2;
-            if (more({w, 1}, p[m]))
-                l = m;
-            else
-                r = m;
-        }
-        return q[r].fr * (ll)w + q[r].sc;
-    }
+struct LineContainer : multiset<Line, less<>> {
+	// (for doubles, use inf = 1/.0, div(a,b) = a/b)
+	static const ll inf = LLONG_MAX;
+	ll div(ll a, ll b) { // floored division
+		return a / b - ((a ^ b) < 0 && a % b); }
+	bool isect(iterator x, iterator y) {
+		if (y == end()) return x->p = inf, 0;
+		if (x->k == y->k) x->p = x->m > y->m ? inf : -inf;
+		else x->p = div(y->m - x->m, x->k - y->k);
+		return x->p >= y->p;
+	}
+	void add(ll k, ll m) {
+		auto z = insert({k, m, 0}), y = z++, x = y;
+		while (isect(y, z)) z = erase(z);
+		if (x != begin() && isect(--x, y)) isect(x, y = erase(y));
+		while ((y = x) != begin() && (--x)->p >= y->p)
+			isect(x, erase(y));
+	}
+	ll query(ll x) {
+		assert(!empty());
+		auto l = *lower_bound(x);
+		return l.k * x + l.m;
+	}
 };
