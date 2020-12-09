@@ -1,3 +1,6 @@
+// if you really want to get AC use this
+// https://github.com/dacin21/dacin21_codebook/blob/master/flow/mincost_PRonly.cpp
+
 template<typename F = int, typename C = int>
 struct mcmf {
     struct Edge {
