@@ -2,6 +2,7 @@
 // use carefully
 // division works VERY SLOW
 // dont use mul10, div10: it has overflow!!
+// dont use Div, it uses mul10!!!!
 
 const double eps = 1e-12, PI = atan2(0, -1);
 
