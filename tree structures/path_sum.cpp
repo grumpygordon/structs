@@ -1,5 +1,4 @@
-
-struct PATH_SUM {
+struct CALC {
     struct Fen {
 #define Val ll
         vector<Val> q;
@@ -37,20 +36,22 @@ struct PATH_SUM {
 
     vector<int> a;
 
-    PATH_SUM(vector<int> const &a_) {
+    CALC(vector<int> const &a_) {
         a = a_;
         tnow = 0;
         dfs(0);
         f.init(tnow);
         for (int i = 0; i < n; i++) {
+            /todo
             f.inc(seg[i].fr, a[i]);
             f.inc(seg[i].sc, -a[i]);
         }
     }
 
     void upd(int i, int w) {
-        f.inc(seg[i].fr, a[i] ^ w);
-        f.inc(seg[i].sc, a[i] ^ w);
+        /todo
+        f.inc(seg[i].fr, w - a[i]);
+        f.inc(seg[i].sc, -(w - a[i]));
         a[i] = w;
     }
 
