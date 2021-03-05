@@ -119,7 +119,8 @@ namespace fft {
         return res;
     }
 
-    // fft::multiply uses dbl, outputs vector<long long> of rounded values
-    // fft::multiply_mod might work for res.size() up to 2^21
-    // typedef long double dbl;          =>        up to 2^25 (but takes a lot of memory)
+// works for max value (max(a)*max(b)*n) up to 1e14 (multiply_mod with n up to 1e5)
+// using dbl = long double;  // works for max value (max(a)*max(b)*n) up to 1e17
+// dbl - 8 byte
+// ldbl - 10 byte
 }
