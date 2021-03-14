@@ -1,5 +1,6 @@
 
-template<typename T>
+//template<typename T>
+//use T=Mint
 vector<T> BM(vector<T> a) {
     vector<T> p = {1};
     vector<T> q = {1};
