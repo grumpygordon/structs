@@ -19,4 +19,20 @@ struct Fen {
             w += q[i];
         return w;
     }
+
+    // return min i: sum(0, i) > x
+    int upper_bound(Val x) {
+        int k = 1;
+        while (2 * k <= n) k *= 2;
+
+        int res = 0;
+        while (k > 0) {
+            if (q[res + k - 1] <= x) {
+                x -= q[res + k - 1];
+                res += k;
+            }
+            k /= 2;
+        } 
+        return res;
+    }
 };
