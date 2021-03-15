@@ -120,11 +120,16 @@ o##"  ""#############""     ##****###
 //#pragma GCC target("avx,tune=native")
 //float __attribute__((aligned(32)))
 
-/*char memory[(int)1e8];
+/*
+const int MEMSIZE = 1e8;
 
-char memorypos;
+char memory[MEMSIZE];
+
+int memorypos;
 
 inline void * operator new(size_t n){
+    if (memorypos + n >= MEMSIZE)
+        memorypos = MEMSIZE / 2;
     char * ret = memory + memorypos;
     memorypos += n;
     return (void *)ret;

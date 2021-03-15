@@ -1,4 +1,9 @@
 
+//f(a, m) - m-th element of a, m is 1-based
+//BM(a) - smallest recurrence
+//if q = BM(a), then
+//sum(q_i * a_i) = 0 true for any shift of a
+
 //template<typename T>
 //use T=Mint
 vector<T> BM(vector<T> a) {
@@ -74,6 +79,8 @@ vector<T> bin(int n, vector<T> p) {
     }
     return res;
 }
+
+//m is 1-based
 template<typename T>
 T f(vector<T> t, int m) {
     vector<T> v = BM(t);
