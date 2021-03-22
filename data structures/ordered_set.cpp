@@ -16,3 +16,6 @@ using ordered_set = tree<T, null_type, less<T>, rb_tree_tag, tree_order_statisti
 
 // q.order_of_key(z)
 // index(0-based) of lower_bound(z)
+
+// q.find_by_order(z)
+// iterator of z-th element
