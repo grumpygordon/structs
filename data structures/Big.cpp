@@ -1,8 +1,5 @@
-
 // use carefully
 // division works VERY SLOW
-// dont use mul10, div10: it has overflow!!
-// dont use Div, it uses mul10!!!!
 
 const double eps = 1e-12, PI = atan2(0, -1);
 
@@ -14,7 +11,7 @@ namespace fft {
 
         num() { x = y = 0; }
 
-        num(dbl x, dbl y) : x(x), y(y) {}
+        num(dbl x_, dbl y_) : x(x_), y(y_) {}
     };
 
     inline num operator+(num a, num b) { return num(a.x + b.x, a.y + b.y); }
@@ -29,8 +26,7 @@ namespace fft {
     vector<num> roots = {{0, 0},
                          {1, 0}};
     vector<int> rev = {0, 1};
-
-    const dbl PI = acosl(-1.0);
+    const dbl PI = static_cast<dbl>(acosl(-1.0));
 
     void ensure_base(int nbase) {
         if (nbase <= base) {
@@ -56,7 +52,7 @@ namespace fft {
 
     void fft(vector<num> &a, int n = -1) {
         if (n == -1) {
-            n = a.size();
+            n = (int) a.size();
         }
         assert((n & (n - 1)) == 0);
         int zeros = __builtin_ctz(n);
@@ -67,32 +63,66 @@ namespace fft {
                 swap(a[i], a[rev[i] >> shift]);
             }
         }
-/*    for (int k = 1; k < n; k <<= 1) {
-      for (int i = 0; i < n; i += 2 * k) {
-        for (int j = 0; j < k; j++) {
-          num z = a[i + j + k] * roots[j + k];
-          a[i + j + k] = a[i + j] - z;
-          a[i + j] = a[i + j] + z;
-        }
-      }
-    }*/
-        for (int len = 1; len < n; len <<= 1) {
-            for (int i = 0; i < n; i += 2 * len) {
-                for (int j = i, k = i + len; j < i + len; j++, k++) {
-                    num z = a[k] * roots[k - i];
-                    a[k] = a[j] - z;
-                    a[j] = a[j] + z;
+        for (int k = 1; k < n; k <<= 1) {
+            for (int i = 0; i < n; i += 2 * k) {
+                for (int j = 0; j < k; j++) {
+                    num z = a[i + j + k] * roots[j + k];
+                    a[i + j + k] = a[i + j] - z;
+                    a[i + j] = a[i + j] + z;
                 }
             }
         }
     }
 
     vector<num> fa, fb;
-#define Res long long
+
 #define Val int
-    vector<Res> multiply(vector<Val> &a, vector<Val> &b) {
-        int need = a.size() + b.size() - 1;
-        int nbase = 0;
+#define Res ll
+    vector<Res> square(const vector<Val> &a) {
+        if (a.empty()) {
+            return {};
+        }
+        int need = (int) a.size() + (int) a.size() - 1;
+        int nbase = 1;
+        while ((1 << nbase) < need) nbase++;
+        ensure_base(nbase);
+        int sz = 1 << nbase;
+        if ((sz >> 1) > (int) fa.size()) {
+            fa.resize(sz >> 1);
+        }
+        for (int i = 0; i < (sz >> 1); i++) {
+            int x = (2 * i < (int) a.size() ? a[2 * i] : 0);
+            int y = (2 * i + 1 < (int) a.size() ? a[2 * i + 1] : 0);
+            fa[i] = num(x, y);
+        }
+        fft(fa, sz >> 1);
+        num r(1.0 / (sz >> 1), 0.0);
+        for (int i = 0; i <= (sz >> 2); i++) {
+            int j = ((sz >> 1) - i) & ((sz >> 1) - 1);
+            num fe = (fa[i] + conj(fa[j])) * num(0.5, 0);
+            num fo = (fa[i] - conj(fa[j])) * num(0, -0.5);
+            num aux = fe * fe + fo * fo * roots[(sz >> 1) + i] * roots[(sz >> 1) + i];
+            num tmp = fe * fo;
+            fa[i] = r * (conj(aux) + num(0, 2) * conj(tmp));
+            fa[j] = r * (aux + num(0, 2) * tmp);
+        }
+        fft(fa, sz >> 1);
+        vector<int64_t> res(need);
+        for (int i = 0; i < need; i++) {
+            res[i] = llround(i % 2 == 0 ? fa[i >> 1].x : fa[i >> 1].y);
+        }
+        return res;
+    }
+
+    vector<Res> multiply(const vector<Val> &a, const vector<Val> &b) {
+        if (a.empty() || b.empty()) {
+            return {};
+        }
+        if (a == b) {
+            return square(a);
+        }
+        int need = (int) a.size() + (int) b.size() - 1;
+        int nbase = 1;
         while ((1 << nbase) < need) nbase++;
         ensure_base(nbase);
         int sz = 1 << nbase;
@@ -105,29 +135,34 @@ namespace fft {
             fa[i] = num(x, y);
         }
         fft(fa, sz);
-        num r(0, -0.25 / sz);
+        num r(0, -0.25 / (sz >> 1));
         for (int i = 0; i <= (sz >> 1); i++) {
             int j = (sz - i) & (sz - 1);
             num z = (fa[j] * fa[j] - conj(fa[i] * fa[i])) * r;
-            if (i != j) {
-                fa[j] = (fa[i] * fa[i] - conj(fa[j] * fa[j])) * r;
-            }
+            fa[j] = (fa[i] * fa[i] - conj(fa[j] * fa[j])) * r;
             fa[i] = z;
         }
-        fft(fa, sz);
-        vector<Res> res(need);
+        for (int i = 0; i < (sz >> 1); i++) {
+            num A0 = (fa[i] + fa[i + (sz >> 1)]) * num(0.5, 0);
+            num A1 = (fa[i] - fa[i + (sz >> 1)]) * num(0.5, 0) * roots[(sz >> 1) + i];
+            fa[i] = A0 + A1 * num(0, 1);
+        }
+        fft(fa, sz >> 1);
+        vector<int64_t> res(need);
         for (int i = 0; i < need; i++) {
-            res[i] = fa[i].x + 0.5;
+            res[i] = llround(i % 2 == 0 ? fa[i >> 1].x : fa[i >> 1].y);
         }
         return res;
     }
-
-    // fft::multiply uses dbl, outputs vector<long long> of rounded values
-    // fft::multiply_mod might work for res.size() up to 2^21
-    // typedef long double dbl;          =>        up to 2^25 (but takes a lot of memory)
 }
-const Val base = 1e6;
-const int basen = 6;
+
+// don't increase that, fft will overflow
+const Val base = 1e5;
+const int basen = 5;
+
+// you can change base to any number,
+// but make sure basen is not used
+
 #define pb push_back
 struct Big {
     vector<Val> v;
@@ -219,8 +254,10 @@ struct Big {
             rem = v[i] / base;
             v[i] %= base;
         }
-        if (rem != 0)
+        if (rem != 0) {
             v.push_back(rem);
+            assert(rem < base);
+        }
         return *this;
     }
 
@@ -339,6 +376,8 @@ Big operator+(Big a, Big b) {
     }
 }
 
+string to_string(Big s);
+
 Big operator-(Big a, Big b) {
     if (a.minus == b.minus) {
         bool minus = false;
@@ -346,8 +385,9 @@ Big operator-(Big a, Big b) {
             swap(a, b);
             minus = true;
         }
-        for (int i = 0; i < b.size(); ++i) {
-            a[i] -= b[i];
+        for (int i = 0; i < b.size() || a[i] < 0; ++i) {
+            if (i < b.size())
+                a[i] -= b[i];
             if (a[i] < 0) {
                 a[i] += base;
                 a[i + 1]--;
@@ -376,6 +416,8 @@ Big operator*(Big a, Big b) {
         if (i < v.size())
             cur += v[i];
         c[i] = (cur % base);
+        //fft overflows
+        assert(c[i] >= 0);
         cur /= base;
     }
     c.norm();
@@ -445,6 +487,7 @@ string to_string(Big a) {
     s += to_string(a.v.back());
     for (int i = (int) a.size() - 2; i >= 0; --i) {
         string s1 = to_string(a[i]);
+        assert(s1[0] != '-');
         if (s1.size() % basen != 0) {
             for (int j = 0; j < basen - (s1.size() % basen); ++j) {
                 s.push_back('0');
@@ -488,6 +531,7 @@ Big convolution(vector<T> &ss, int l, int r) {
     int m = (l + r) / 2;
     return convolution(ss, l, m) * convolution(ss, m + 1, r);
 }
+
 template<typename T>
 Big convolution(vector<T> s) {
     if (s.empty())
