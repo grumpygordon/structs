@@ -3,7 +3,7 @@
 //BM(a) - smallest recurrence
 //if q = BM(a), then
 //sum(q_i * a_i) = 0 true for any shift of a
-//works in k^2 * log(n)
+//works in n^2(recurrenta) + k^2 * log(n)(n-th element)
 
 //template<typename T>
 //use T=Mint
