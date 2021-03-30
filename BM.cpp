@@ -3,6 +3,7 @@
 //BM(a) - smallest recurrence
 //if q = BM(a), then
 //sum(q_i * a_i) = 0 true for any shift of a
+//works in k^2 * log(n)
 
 //template<typename T>
 //use T=Mint
@@ -69,7 +70,7 @@ vector<T> mem(vector<T> a, vector<T> b) {
     return a;
 }
 template<typename T>
-vector<T> bin(int n, vector<T> p) {
+vector<T> bin(ll n, vector<T> p) {
     vector<T> res(1, 1);
     vector<T> a(2); a[1] = 1;
     while (n) {
@@ -82,7 +83,7 @@ vector<T> bin(int n, vector<T> p) {
 
 //m is 1-based
 template<typename T>
-T f(vector<T> t, int m) {
+T f(vector<T> t, ll m) {
     vector<T> v = BM(t);
     vector<T> o = bin(m - 1, v);
     T res = 0;
