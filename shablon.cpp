@@ -84,6 +84,8 @@ o##"  ""#############""     ##****###
   ###
 */
 //#pragma GCC optimize("Ofast,no-stack-protector")
+//#pragma GCC optimize("fast-math")
+//#pragma GCC target("avx2")
 #include <bits/stdc++.h>
 #ifdef ONPC
 #pragma clang diagnostic push
