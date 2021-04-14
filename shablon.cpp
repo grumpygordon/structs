@@ -90,6 +90,11 @@ o##"  ""#############""     ##****###
 //#pragma GCC target("sse,sse2,sse3,ssse3,sse4,popcnt,abm,mmx,avx,tune=native")
 //#pragma GCC optimize("unroll-loops")
 
+// something
+//#pragma GCC optimize("O3","unroll-loops","omit-frame-pointer","inline") //Optimization flags
+//#pragma GCC option("arch=native","tune=native","no-zero-upper") //Enable AVX
+//#pragma GCC target("avx")  //Enable AVX
+
 #include <bits/stdc++.h>
 #ifdef ONPC
 #pragma clang diagnostic push
