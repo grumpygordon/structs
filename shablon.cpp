@@ -86,6 +86,10 @@ o##"  ""#############""     ##****###
 //#pragma GCC optimize("Ofast,no-stack-protector")
 //#pragma GCC optimize("fast-math")
 //#pragma GCC target("avx2")
+// if avx2 not supported, use this instead
+//#pragma GCC target("sse,sse2,sse3,ssse3,sse4,popcnt,abm,mmx,avx,tune=native")
+//#pragma GCC optimize("unroll-loops")
+
 #include <bits/stdc++.h>
 #ifdef ONPC
 #pragma clang diagnostic push
