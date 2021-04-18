@@ -27,9 +27,9 @@ struct Fen {
 
         int res = 0;
         while (k > 0) {
-            if (q[res + k - 1] < x) {
-                x -= q[res + k - 1];
+            if (res + k <= n && q[res + k - 1] < x) {
                 res += k;
+                x -= q[res - 1];
             }
             k /= 2;
         } 

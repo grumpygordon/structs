@@ -168,7 +168,10 @@ void setmax(T &x, T y) {
 
 using ld = double;
 
-const int maxn = 1e5 + 100, maxw = 4 * maxn, inf = 1e9 + 100, llinf = 1e18 + 100;
+const ll llinf = 1e18 + 100;
+
+const int maxn = 1e5 + 100, maxw = 4 * maxn, inf = 1e9 + 100;
+
 
 void solve() {
 
