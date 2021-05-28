@@ -77,7 +77,7 @@ vector<int> subset_conv(vector<int> a, vector<int> b) {
             }
         }
     }
-    
+
     vector<int> fog(n);
 
     for(int mask = 0; mask < (1 << N); mask++)  fog[mask] = h[__builtin_popcount(mask)][mask];
