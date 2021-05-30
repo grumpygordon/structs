@@ -1,6 +1,9 @@
 //you can use both multiply_nft and multiply
 //multiply works a little bit faster
 
+using uint = unsigned int;
+using ull = unsigned long long;
+
 template <uint MD> struct ModInt {
     using M = ModInt;
     static constexpr uint get_mod() { return MD; }
