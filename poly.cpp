@@ -1,3 +1,5 @@
+//working polynomials: https://github.com/e-maxx-eng/e-maxx-eng-aux/blob/master/src/polynomial.cpp
+
 //some random izban's code
 
 #include <bits/stdc++.h>
