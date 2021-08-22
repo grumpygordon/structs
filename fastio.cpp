@@ -38,7 +38,7 @@ inline int readChar() {
 }
 
 template<class T>
-inline T readInt() {
+inline T rd() {
     int s = 1, c = readChar();
     if (c == -1)
         return -1;
@@ -62,7 +62,7 @@ inline void writeChar(int x) {
 }
 
 template<class T>
-inline void writeInt(T x, char end) {
+inline void wt(T x, char end) {
     if (x < 0)
         writeChar('-'), x = -x;
 

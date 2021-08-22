@@ -1,3 +1,6 @@
+// if anything, use yosupo judge!!
+
+//lyric: https://github.com/hos-lyric/libra/blob/master/algebra/poly998244353_portable.cpp
 //working polynomials: https://github.com/e-maxx-eng/e-maxx-eng-aux/blob/master/src/polynomial.cpp
 //has sqrt: https://github.com/koosaga/olympiad/blob/master/Library/codes/math/algebra.cpp
 //some random izban's code
