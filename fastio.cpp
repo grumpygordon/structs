@@ -5,10 +5,10 @@
 inline int readChar();
 
 template<class T = int>
-inline T readInt();
+inline T rd();
 
 template<class T>
-inline void writeInt(T x, char end = 0);
+inline void wt(T x, char end = 0);
 
 inline void writeChar(int x);
 
