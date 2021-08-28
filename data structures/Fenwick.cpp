@@ -20,6 +20,14 @@ struct Fen {
         return w;
     }
 
+    Val get(int l, int r) {
+        setmax(l, 0);
+        setmax(r, n - 1);
+        if (l > r)
+            return 0;
+        return get(r) - get(l - 1);
+    }
+
     // return min i: sum(0, i) >= x
     int lower_bound(Val x) {
         int k = 1;

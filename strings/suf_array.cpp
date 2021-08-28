@@ -1,14 +1,26 @@
-
-vector<int> sufarray(string &s){
+vector<int> sufarray(vector<int> s) {
+    if (s.empty())
+        return {};
     auto md = [](int x, int y) {
-	return x >= y ? x - y : x < 0 ? x + y : x;
+        return x >= y ? x - y : x < 0 ? x + y : x;
     };
-    s.push_back('$');
-    int n = s.length(), sum;
-    vector<int> mas(n), buck(max(n, 256)), col(n), buf(n);
+
+    int small = s[0];
+    for (int i : s)
+        small = min(small, i);
+    small--;
+    s.push_back(small);
+    for (int &i : s)
+        i -= small;
+    // sort is possible here
+    // sort_suf(s);
+    int large = s[0];
+    for (int i : s)
+        large = max(large, i);
+    int n = s.size(), sum;
+    vector<int> mas(n), buck(max(n, large + 1)), col(n), buf(n);
     for (int i = 0; i < n; i++)
         col[i] = s[i];
-    fill(buck.begin(), buck.end(), 0);
     sum = 0;
     for (int i = 0; i < n; i++)
         buck[col[i]]++;
@@ -22,7 +34,7 @@ vector<int> sufarray(string &s){
             col[mas[i]] = col[mas[i - 1]];
         else
             col[mas[i]] = col[mas[i - 1]] + 1;
-    for (int len = 1; len < n; len <<= 1){
+    for (int len = 1; len < n; len <<= 1) {
         fill(buck.begin(), buck.end(), 0);
         sum = 0;
         for (int i = 0; i < n; i++)
@@ -42,24 +54,29 @@ vector<int> sufarray(string &s){
     }
     s.pop_back();
     for (int i = 0; i < n; i++)
-        if (mas[i] == n - 1){
+        if (mas[i] == n - 1) {
             mas.erase(mas.begin() + i);
             break;
         }
     return mas;
 }
 
-vector<int> lcpsufarray(vector<int> &sufmas, string &s){
-    int n = s.length();
+vector<int> sufarray(string s) {
+    return sufarray(vector<int>{all(s)});
+}
+
+template<typename T>
+vector<int> calc_lcp(const vector<int> &suf_a, const T &s) {
+    int n = s.size();
     vector<int> obr(n), mas(n);
     for (int i = 0; i < n; i++)
-        obr[sufmas[i]] = i;
+        obr[suf_a[i]] = i;
     int k = 0;
     for (int i = 0; i < n; i++)
         if (obr[i] == n - 1)
             mas[n - 1] = -1;
-        else{
-            while (max(i + k, sufmas[obr[i] + 1] + k) < n && s[i + k] == s[sufmas[obr[i] + 1] + k])
+        else {
+            while (max(i + k, suf_a[obr[i] + 1] + k) < n && s[i + k] == s[suf_a[obr[i] + 1] + k])
                 k++;
             mas[obr[i]] = k;
             if (k > 0)
