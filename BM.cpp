@@ -1,3 +1,8 @@
+//tldr: use https://github.com/maksim1744/programming-library/blob/master/berlekamp_massey.cpp
+//warn: nth is 0-based
+//ALSO: there always exists rec of size n/2, so if you expect rec of size m, provide array of size 2m
+
+
 
 //f(a, m) - m-th element of a, m is 1-based
 //BM(a) - smallest recurrence
@@ -5,7 +10,7 @@
 //sum(q_i * a_i) = 0 true for any shift of a
 //works in n^2(recurrenta) + k^2 * log(n)(n-th element)
 
-//template<typename T>
+template<typename T>
 //use T=Mint
 vector<T> BM(vector<T> a) {
     vector<T> p = {1};
@@ -51,8 +56,9 @@ vector<T> mul(vector<T> a, vector<T> b) {
     }
     return c;
 }
+
 template<typename T>
-vector<T> mem(vector<T> a, vector<T> b) {
+vector<T> mom(vector<T> a, vector<T> b) {
     if (a.size() < b.size()) a.resize(b.size() - 1);
 
     T o = 1 / T(b.back());
@@ -69,6 +75,21 @@ vector<T> mem(vector<T> a, vector<T> b) {
     }
     return a;
 }
+template<typename T>
+vector<T> mem(vector<T> a, vector<T> b) {
+    assert(b.back() == 1);
+    while (a.size() >= b.size()) {
+        T coef = -a.back();
+        if (coef != 0) {
+            for (int j = 0; j < (int) b.size() - 1; j++)
+                a[a.size() - (int)b.size() + j] += coef * b[j];
+        }
+        a.pop_back();
+    }
+    return a;
+}
+
+
 template<typename T>
 vector<T> bin(ll n, vector<T> p) {
     vector<T> res(1, 1);
