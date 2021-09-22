@@ -1,6 +1,8 @@
 // if you really want to get AC use this
 // https://github.com/dacin21/dacin21_codebook/blob/master/flow/mincost_PRonly.cpp
 
+//max flow(basically max capacity)
+//max cost(actual answer)
 template<typename F = int, typename C = int>
 struct mcmf {
     struct Edge {
@@ -27,10 +29,10 @@ struct mcmf {
         tak.resize(n);
     }
 
-    void add(int v, int u, F c, C cost_, F bc = 0, F f = 0) {
+    void add(int v, int u, F cap, C cost, F back_cap = 0, F flow = 0) {
         int w = ed.size();
-        ed.push_back({v, u, f, c, cost_});
-        ed.push_back({u, v, -f, bc, -cost_});
+        ed.push_back({v, u, flow, cap, cost});
+        ed.push_back({u, v, -flow, back_cap, -cost});
         e[v].push_back(w);
         e[u].push_back(w + 1);
     }
@@ -73,18 +75,18 @@ struct mcmf {
                     break;
                 tak[v] = 1;
                 for (int i : e[v])
-                if (ed[i].f < ed[i].c) {
-                    auto &w = ed[i];
-                    assert(pot[w.u] != INF);
-                    assert(pot[v] != INF);
-                    C uw = w.cost + pot[v] - pot[w.u];
-                    assert(uw >= 0);
-                    uw += npot[v];
-                    if (npot[w.u] > uw) {
-                        npot[w.u] = uw;
-                        par[w.u] = i;
+                    if (ed[i].f < ed[i].c) {
+                        auto &w = ed[i];
+                        assert(pot[w.u] != INF);
+                        assert(pot[v] != INF);
+                        C uw = w.cost + pot[v] - pot[w.u];
+                        assert(uw >= 0);
+                        uw += npot[v];
+                        if (npot[w.u] > uw) {
+                            npot[w.u] = uw;
+                            par[w.u] = i;
+                        }
                     }
-                }
             }
             for (int i = 0; i < n; i++)
                 pot[i] = (npot[i] == INF ? INF : pot[i] + npot[i]);
@@ -100,19 +102,19 @@ struct mcmf {
                     continue;
                 tak[v] = 1;
                 for (int i : e[v])
-                if (ed[i].f < ed[i].c) {
-                    auto &w = ed[i];
-                    assert(pot[w.u] != INF);
-                    assert(pot[v] != INF);
-                    C uw = w.cost + pot[v] - pot[w.u];
-                    assert(uw >= 0);
-                    uw += npot[v];
-                    if (npot[w.u] > uw) {
-                        npot[w.u] = uw;
-                        que.push({-uw, w.u});
-                        par[w.u] = i;
+                    if (ed[i].f < ed[i].c) {
+                        auto &w = ed[i];
+                        assert(pot[w.u] != INF);
+                        assert(pot[v] != INF);
+                        C uw = w.cost + pot[v] - pot[w.u];
+                        assert(uw >= 0);
+                        uw += npot[v];
+                        if (npot[w.u] > uw) {
+                            npot[w.u] = uw;
+                            que.push({-uw, w.u});
+                            par[w.u] = i;
+                        }
                     }
-                }
             }
             for (int i = 0; i < n; i++)
                 pot[i] = (npot[i] == INF ? INF : pot[i] + npot[i]);
@@ -120,7 +122,7 @@ struct mcmf {
         return pot[fin] != INF;
     }
 
-    pair<F, C> get(bool use_que = 0) {
+    pair<F, C> get(bool use_que = 1) {
         if (!ford_bellman())
             return {0, 0};
         while (1) {
