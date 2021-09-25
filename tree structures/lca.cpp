@@ -3,7 +3,7 @@ vector<int> e[maxn];
 
 int n;
 
-struct LCA {
+namespace LCA {
     int up[LG][maxn];
     int h[maxn];
 
