@@ -42,12 +42,14 @@ namespace Ment {
         constexpr static Type mod() { return T::value; }
 
         Modular &operator+=(const Modular &other) {
-            if ((value += other.value) >= mod()) value -= mod();
+            value += other.value - mod();
+            value += (value >> 31) & mod();
             return *this;
         }
 
         Modular &operator-=(const Modular &other) {
-            if ((value -= other.value) < 0) value += mod();
+            value -= other.value;
+            value += (value >> 31) & mod();
             return *this;
         }
 
@@ -211,9 +213,10 @@ namespace Ment {
         return stream;
     }
 
-    constexpr int md = 998244353;
+    constexpr int md = 1e9 + 7;
     using Mint = Modular<std::integral_constant<decay<decltype(md)>::type, md>>;
 }
+
 using Ment::Mint;
 /*
 using ModType = int;
