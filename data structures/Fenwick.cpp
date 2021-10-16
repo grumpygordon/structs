@@ -22,7 +22,7 @@ struct Fen {
 
     Val get(int l, int r) {
         setmax(l, 0);
-        setmax(r, n - 1);
+        setmin(r, n - 1);
         if (l > r)
             return 0;
         return get(r) - get(l - 1);
