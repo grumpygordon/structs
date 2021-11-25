@@ -1,3 +1,4 @@
+//example for += in node
 struct CALC {
     struct Fen {
 #define Val ll

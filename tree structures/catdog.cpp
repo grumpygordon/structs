@@ -4,12 +4,12 @@
 struct Node {
     int c[2][2] = {{0, inf}, {inf, 0}};
 };
- 
+
 struct Str {
     vector<Node> q;
- 
+
     int s;
- 
+
     void update(int v) {
         for (int i = 0; i < 2; i++)
             for (int j = 0; j < 2; j++) {
@@ -22,7 +22,7 @@ struct Str {
                     }
             }
     }
- 
+
     void upd(int v, Node const &w) {
         //cerr << "before " << s << '\n';
         assert(v < s);
@@ -35,7 +35,7 @@ struct Str {
         }
         //cerr << "after " << s << '\n';
     }
- 
+
     void init(int n) {
         s = 1;
         while (s < n)
@@ -44,31 +44,33 @@ struct Str {
         for (int i = s - 1; i > 0; i--)
             update(i);
     }
- 
+
     pair<int, int> get() {
         pair<int, int> v = {min(q[1].c[0][0], q[1].c[0][1]),
-                min(q[1].c[1][0], q[1].c[1][1])};
+                            min(q[1].c[1][0], q[1].c[1][1])};
         return {min(v.fr, v.sc + 1), min(v.sc, v.fr + 1)};
     }
 };
- 
+
 int n;
- 
+
 vector<int> e[maxn];
- 
+
 int p[maxn];
- 
+
 int sz[maxn];
- 
+
 int mas[maxn][2];
- 
+
 int who[maxn];
- 
+
 void prec(int v, int par) {
     p[v] = par;
     sz[v] = 1;
     if (v)
         e[v].erase(find(all(e[v]), par));
+    if (e[v].empty())
+        return;
     for (int i : e[v])
         if (i != par) {
             prec(i, v);
@@ -80,11 +82,11 @@ void prec(int v, int par) {
             id = i;
     swap(e[v][0], e[v][id]);
 }
- 
+
 Str tree[maxn];
- 
+
 int hid[maxn], hpar[maxn], hsz[maxn];
- 
+
 void upd(int v) {
     Node s;
     s.c[0][0] = mas[v][0];
@@ -95,7 +97,7 @@ void upd(int v) {
         s.c[0][0] = inf;
     tree[hpar[v]].upd(hid[v], s);
 }
- 
+
 void dfs(int v) {
     hid[v] = hsz[hpar[v]]++;
     //cerr << v << ' ' << hid[v] << ' ' << hpar[v] << '\n';
@@ -110,7 +112,7 @@ void dfs(int v) {
         dfs(e[v][i]);
     }
 }
- 
+
 void solve() {
     cin >> n;
     for (int i = 0; i < n; i++)
@@ -144,7 +146,7 @@ void solve() {
             mas[u][1] += res.sc - old.sc;
             v = u;
         }
- 
+
         auto res = tree[0].get();
         cout << min(res.fr, res.sc) << '\n';
     }
