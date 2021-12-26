@@ -2,7 +2,7 @@
 //for n^3 refer to overleaf teambook
 struct MaxMatching {
     template <class T> struct simple_queue {
-        std::vector<T> payload;
+        vector<T> payload;
         int pos = 0;
         void reserve(int n) { payload.reserve(n); }
         int size() const { return int(payload.size()) - pos; }
@@ -24,10 +24,10 @@ struct MaxMatching {
         g[b].push_back(a);
     }
 
-    std::vector<std::pair<int, int>> max_matching() {
+    vector<pair<int, int>> max_matching() {
         greedy_match();
         blossom_match();
-        std::vector<std::pair<int, int>> result;
+        vector<pair<int, int>> result;
         for (int i = 0; i < n; i++) {
             if (i < mate[i]) {
                 result.push_back({i, mate[i]});
@@ -38,9 +38,9 @@ struct MaxMatching {
 
 private:
     int n;
-    std::vector<std::vector<int>> g;
+    vector<vector<int>> g;
 
-    std::vector<int> mate; // (i, mate[i]) or mate[i] = -1
+    vector<int> mate; // (i, mate[i]) or mate[i] = -1
 
     void greedy_match() {
         vector<int> ord(n);
@@ -58,10 +58,10 @@ private:
     }
 
     void blossom_match() {
-        std::vector<int> is_even(n, -1); // Alternating path to (i -> is_even[i])
-        std::vector<int> _first(n); // parent direction
+        vector<int> is_even(n, -1); // Alternating path to (i -> is_even[i])
+        vector<int> _first(n); // parent direction
 
-        std::vector<std::pair<int, int>> nx(n);
+        vector<pair<int, int>> nx(n);
 
         auto match = [&](auto self, int p, int b) {
             int d = mate[p];
@@ -106,8 +106,8 @@ private:
                         if (x == y) continue;
                         int z = -1;
                         while (x != -1 || y != -1) {
-                            if (y != -1) std::swap(x, y);
-                            if (nx[x] == std::make_pair(a, b)) {
+                            if (y != -1) swap(x, y);
+                            if (nx[x] == make_pair(a, b)) {
                                 z = x;
                                 break;
                             }
