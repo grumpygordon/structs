@@ -9,21 +9,23 @@ struct Dinic {
     int n, st, fin;
     T flow;
 
-    vector<int> ptr, ds, que;
+    vector<int> ptr, ds, que, vis;
 
     Dinic(int n_, int st_, int fin_) : n(n_), st(st_), fin(fin_), flow(0) {
         e.resize(n);
         ptr.resize(n);
         ds.resize(n);
         que.resize(n);
+        vis.resize(n);
     }
 
-    void add(int v, int u, T c, T bc = 0, T f = 0) {
+    int add(int v, int u, T c, T bc = 0, T f = 0) {
         int w = int(ed.size());
         ed.push_back({v, u, f, c});
         ed.push_back({u, v, -f, bc});
         e[v].push_back(w);
         e[u].push_back(w + 1);
+        return w;
     }
 
     bool bfs(T scale) {
@@ -72,5 +74,37 @@ struct Dinic {
                     flow += w;
             }
         return flow;
+    }
+
+    void gfs(int v) {
+        if (vis[v])
+            return;
+        vis[v] = 1;
+        for (int i : e[v]) {
+            auto &t = ed[i];
+            if (t.f < t.c)
+                gfs(t.u);
+        }
+    }
+
+    vector<int> get_cut() {
+        fill(all(vis), 0);
+        gfs(st);
+        vector<int> g;
+        for (int v = 0; v < n; v++)
+            if (vis[v])
+                for (int i : e[v]) {
+                    auto &t = ed[i];
+                    if (!vis[t.u] && t.f == t.c)
+                        g.push_back(i);
+                }
+        // if you want nodes, return vis[v]
+        // for (int i = 0; i < n; i++) if (vis[i]) g.push_back(i); return g;
+
+        // this returns edge ids
+        for (int &i : g)
+            if (i % 2 == 1)
+                i = (i ^ 1);
+        return g;
     }
 };
