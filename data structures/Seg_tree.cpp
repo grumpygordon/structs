@@ -1,3 +1,5 @@
+// speed https://codeforces.com/blog/entry/18051
+
 
 struct Val {
     ll v;
