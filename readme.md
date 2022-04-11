@@ -1,3 +1,5 @@
+тут вэлью (cht O(n), slope trick, все остальное): https://ei1333.github.io/library/
+
 много известных алгоритмов есть на judge.yosupo.jp
 еще несколько алгоритмов есть на https://github.com/the-tourist/algo
 
