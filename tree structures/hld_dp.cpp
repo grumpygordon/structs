@@ -232,7 +232,7 @@ struct HLD {
                 int m = (l + r) >> 1;
                 build(v, i * 2 + 1, l, m);
                 build(v, i * 2 + 2, m + 1, r);
-                tree[i].update(tree[i * 2 + 1], tree[i * 2 + 2], l, r);
+                tree[i].update(tree[i * 2 + 1], tree[i * 2 + 2]);
             }
 
             template<typename T>
@@ -252,7 +252,7 @@ struct HLD {
                 } else if (m < l) {
                     return ask(l, r, i * 2 + 2, m + 1, vr);
                 } else {
-                    return heavy_item::merge(ask(l, m, i * 2 + 1, vl, m), ask(m + 1, r, i * 2 + 2, m + 1, vr), l, r);
+                    return heavy_item::merge(ask(l, m, i * 2 + 1, vl, m), ask(m + 1, r, i * 2 + 2, m + 1, vr));
                 }
             }
 
@@ -282,7 +282,7 @@ struct HLD {
                 tree[i].init(t, l, r);
                 while (i != 0) {
                     i = (i - 1) / 2;
-                    tree[i].update(tree[i * 2 + 1], tree[i * 2 + 2], st[ptr].first, st[ptr].second);
+                    tree[i].update(tree[i * 2 + 1], tree[i * 2 + 2]);
                     --ptr;
                 }
             }
@@ -290,16 +290,18 @@ struct HLD {
 
         vector<segtree> t;
 
+        template<typename T>
         void init(int n) {
-            init(vector<heavy_item>(n));
+            init(vector<T>(n));
         }
 
-        void init(vector<heavy_item> const &q) {
+        template<typename T>
+        void init(vector<T> const &q) {
             t.assign(q.size(), {});
-            vector<heavy_item> g(q.size());
+            vector<T> g(q.size());
             for (int i = 0; i < q.size(); i++)
                 g[tin[i]] = q[i];
-            vector<vector<heavy_item>> cur(q.size());
+            vector<vector<T>> cur(q.size());
             for (int i = 0; i < q.size(); i++) {
                 // hseg[i].fr .. hseg[i].sc
                 for (int j = hseg[i].fr; j <= hseg[i].sc; j++)
@@ -309,15 +311,23 @@ struct HLD {
                 t[i].build(cur[i]);
         }
 
-        void init_heavy_path(int v, vector<heavy_item> const &q) {
+        template<typename T>
+        void init_heavy_path(int v, vector<T> const &q) {
             // v - id of path (also root)
             assert(hid[v] == v);
             assert(q.size() == hseg[v].sc - hseg[v].fr + 1);
             t[v].build(q);
         }
 
-        void modify(int v, heavy_item const &w) {
+        template<typename T>
+        void modify(int v, T const &w) {
             t[hid[v]].set(hpos[v], w);
+        }
+
+        template<typename T>
+        void modify_path(int v, int u, T const &w) {
+            // implement lazy_propagation
+            assert(0);
         }
 
         template<typename T>
@@ -501,7 +511,7 @@ struct HLD {
             hei.assign(n, 0);
             light_sons.init(n);
 
-            // what you need
+            // TODO what you need
             col.assign(n, -1);
         }
         calcsz(root);
