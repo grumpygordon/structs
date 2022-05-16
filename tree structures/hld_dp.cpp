@@ -1,4 +1,4 @@
-// can only modify one node 
+// can only modify one node
 // modify on path is doable (light_sons.set(v, 0) with lazy propagation, same with tree.modify(l, r))
 // modify on subtree is ochen slogno
 
@@ -28,7 +28,7 @@ struct HLD {
             }
 
             void update(const info &first, const info &second, int l, int r) {
-                //TODO
+                // TODO
             }
 
             static info merge(const info &first, const info &second, int l, int r) {
@@ -165,7 +165,7 @@ struct HLD {
         auto w = light_sons.get(v);
 
         heavy_item s{};
-        //TODO s from w
+        // TODO s from w
         return s;
     }
 
@@ -184,7 +184,7 @@ struct HLD {
 
     // heavy_item for heavy path
     struct heavy_item {
-        //TODO
+        // TODO
 
         template<typename T>
         void init(const T &t, int, int) {
@@ -192,7 +192,7 @@ struct HLD {
         }
 
         void update(const heavy_item &first, const heavy_item &second, int, int) {
-            //TODO
+            // TODO
         }
 
         static heavy_item merge(const heavy_item &first, const heavy_item &second, int l, int r) {
@@ -288,53 +288,68 @@ struct HLD {
             }
         };
 
-        segtree t;
+        vector<segtree> t;
 
         void init(int n) {
-            t = segtree{n};
+            init(vector<heavy_item>(n));
         }
 
         void init(vector<heavy_item> const &q) {
+            t.assign(q.size(), {});
             vector<heavy_item> g(q.size());
             for (int i = 0; i < q.size(); i++)
                 g[tin[i]] = q[i];
-            t.build(g);
+            vector<vector<heavy_item>> cur(q.size());
+            for (int i = 0; i < q.size(); i++) {
+                // hseg[i].fr .. hseg[i].sc
+                for (int j = hseg[i].fr; j <= hseg[i].sc; j++)
+                    cur[i].emplace_back(g[j]);
+            }
+            for (int i = 0; i < cur.size(); i++)
+                t[i].build(cur[i]);
         }
 
         void init_heavy_path(int v, vector<heavy_item> const &q) {
             // v - id of path (also root)
             assert(hid[v] == v);
             assert(q.size() == hseg[v].sc - hseg[v].fr + 1);
-            for (int i = 0; i < q.size(); i++)
-                t.set(hseg[v].fr + i, q[i]);
+            t[v].build(q);
         }
 
         void modify(int v, heavy_item const &w) {
-            t.set(tin[v], w);
+            t[hid[v]].set(hpos[v], w);
         }
 
         template<typename T>
         void modify(int l, int r, T const &w) {
             // if you need lazy propagation change segtree to segtree_lazy
             // t.modify(l, r, w);
+
+            // in this version of HLD_segtree you can only change things on heavy path
+            // refer to get_path
             assert(0);
         }
 
         heavy_item get(int v) {
-            return t.ask(tin[v], hseg[hid[v]].sc);
+            // TODO
+            // usually v is always root of heavy path
+            // if segtree is bottom up you can calculate it in O(1) instead of log
+            return t[hid[v]].ask(hpos[v], inf);
         }
 
         heavy_item get_path(int v, int u) {
             assert(hid[v] == hid[u]);
-            v = tin[v];
-            u = tin[u];
+            int id = hid[v];
+            v = hpos[v];
+            u = hpos[u];
             if (v > u)
                 swap(v, u);
-            return t.ask(v, u);
+            return t[id].ask(v, u);
         }
 
         heavy_item get_segm(int l, int r) {
-            return t.ask(l, r);
+            // not doable in this version
+            assert(0);
         }
     };
 
@@ -421,8 +436,6 @@ struct HLD {
                 idfs(i, heavy_id);
     }
 
-    vector<int> col;
-
     void fix(int v) {
         tree.modify(v, light_to_heavy(v));
     }
@@ -439,12 +452,16 @@ struct HLD {
         }
     }
 
+
+    // TODO col or what you need
+    vector<int> col;
+
     template<typename T>
     void change_node(int v, T const &color) {
         Light_sons::info s{};
 
         // fill s and update other vectors (col for example)
-        //TODO
+        // TODO
         // done
 
         light_sons.set(v, 0, s);
@@ -483,12 +500,14 @@ struct HLD {
             light_id.assign(n, -1);
             hei.assign(n, 0);
             light_sons.init(n);
-            tree.init(n);
 
             // what you need
             col.assign(n, -1);
         }
         calcsz(root);
         idfs(root, root);
+        tree.init(n);
+
+        // TODO: O(n) init can be done here
     }
 };
