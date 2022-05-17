@@ -150,7 +150,7 @@ struct HLD {
         }
 
         info get(int v) {
-             return tlight[v].get();
+            return tlight[v].get();
         }
 
         // id - index in sons[v]
@@ -161,21 +161,27 @@ struct HLD {
 
     // aggregate myself (light_list[v][0]) and light sons
     // to get item for heavy path
+    // NOTE: light_son already has up edge (if you are yourself, then no edge needed), it was added in heavy_to_light
     heavy_item light_to_heavy(int v) {
         auto w = light_sons.get(v);
 
         heavy_item s{};
+        // dont change
+        s.edge = p_edge[v];
+
         // TODO s from w
         return s;
     }
 
     // convert heavy item to light so I can push it to my father
     // u must be light son (= root of heavy path and not root)
+    // NOTE: you must add up edge
     Light_sons::info heavy_to_light(int u) {
         auto s = tree.get(u);
         assert(u != root && hid[u] == u);
         int v = p[u];
-        // edge weight = hei[u] - hei[v]
+        int e = p_edge[u];
+        // add e
 
         Light_sons::info w{};
         // TODO w from s
@@ -184,20 +190,39 @@ struct HLD {
 
     // heavy_item for heavy path
     struct heavy_item {
-        // TODO
+        // edge to the left, required at update
+        int edge = 0;
+        // sum of edges in segment, required at update
+        ll sum = 0;
 
-        template<typename T>
-        void init(const T &t, int, int) {
+        // TODO example below
+        // l = closest to left
+        // r = closest to right
+        ll l = inf, r = inf, ans = inf;
+
+        void init(const heavy_item &t, int, int) {
             *this = t;
         }
 
-        void update(const heavy_item &first, const heavy_item &second, int, int) {
-            // TODO
+        void update(const heavy_item &first, const heavy_item &second) {
+            // dont delete, required
+            edge = first.edge;
+            sum = first.sum + second.edge + second.sum;
+
+            // use it
+            int e = second.edge;
+
+            // TODO example below
+            ans = min(first.ans, second.ans);
+            setmin(ans, first.r + second.l + e);
+
+            l = min(first.l, first.sum + e + second.l);
+            r = min(second.r, second.sum + e + first.r);
         }
 
-        static heavy_item merge(const heavy_item &first, const heavy_item &second, int l, int r) {
+        static heavy_item merge(const heavy_item &first, const heavy_item &second) {
             heavy_item res;
-            res.update(first, second, l, r);  // careful with different lengths
+            res.update(first, second);  // careful with different lengths
             return res;
         }
     };
@@ -290,37 +315,36 @@ struct HLD {
 
         vector<segtree> t;
 
-        template<typename T>
         void init(int n) {
-            init(vector<T>(n));
+            init(vector<heavy_item>(n));
         }
 
-        template<typename T>
-        void init(vector<T> const &q) {
+        void init(vector<heavy_item> const &q) {
             t.assign(q.size(), {});
-            vector<T> g(q.size());
+            vector<heavy_item> g(q.size());
             for (int i = 0; i < q.size(); i++)
                 g[tin[i]] = q[i];
-            vector<vector<T>> cur(q.size());
+            vector<vector<heavy_item>> cur(q.size());
             for (int i = 0; i < q.size(); i++) {
                 // hseg[i].fr .. hseg[i].sc
                 for (int j = hseg[i].fr; j <= hseg[i].sc; j++)
                     cur[i].emplace_back(g[j]);
             }
             for (int i = 0; i < cur.size(); i++)
-                t[i].build(cur[i]);
+                if (!cur[i].empty())
+                    t[i].build(cur[i]);
+                else
+                    t[i].n = 0;
         }
 
-        template<typename T>
-        void init_heavy_path(int v, vector<T> const &q) {
+        void init_heavy_path(int v, vector<heavy_item> const &q) {
             // v - id of path (also root)
             assert(hid[v] == v);
             assert(q.size() == hseg[v].sc - hseg[v].fr + 1);
             t[v].build(q);
         }
 
-        template<typename T>
-        void modify(int v, T const &w) {
+        void modify(int v, heavy_item const &w) {
             t[hid[v]].set(hpos[v], w);
         }
 
@@ -394,10 +418,16 @@ struct HLD {
     // p[i] - parent
     vector<int> p;
 
+    // weight of edge to parent
+    vector<int> p_edge;
+
     // sons, no parent
     vector<vector<pair<int, int>>> e;
 
     int root;
+
+    // which id am i at my light parent
+    vector<int> light_id;
 
     void calcsz(int v, int par = -1) {
         p[v] = par;
@@ -412,6 +442,7 @@ struct HLD {
         for (auto[i, hlen] : e[v]) {
             h[i] = h[v] + 1;
             hei[i] = hei[v] + hlen;
+            p_edge[i] = hlen;
             calcsz(i, v);
             sz[v] += sz[i];
         }
@@ -446,23 +477,27 @@ struct HLD {
                 idfs(i, heavy_id);
     }
 
-    void fix(int v) {
-        tree.modify(v, light_to_heavy(v));
-    }
-
     void propagate(int v) {
         while (1) {
+            tree.modify(v, light_to_heavy(v));
             v = hid[v];
             if (v == root)
                 break;
             // prop to p[v]
             light_sons.set(p[v], light_id[v], heavy_to_light(v));
             v = p[v];
-            fix(v);
         }
     }
 
-
+    void change_edge(int v, int u, int w) {
+        if (tin[v] > tin[u])
+            swap(v, u);
+        assert(p[u] == v);
+        p_edge[u] = w;
+        // p_edge is used in light_to_heavy
+        propagate(u);
+    }
+    
     // TODO col or what you need
     vector<int> col;
 
@@ -472,10 +507,9 @@ struct HLD {
 
         // fill s and update other vectors (col for example)
         // TODO
-        // done
 
+        // dont change that
         light_sons.set(v, 0, s);
-        fix(v);
         propagate(v);
     }
 
@@ -483,8 +517,11 @@ struct HLD {
         return tree.get(root);
     }
 
-    // which id am i at my light parent
-    vector<int> light_id;
+    bool anc(int v, int u) {
+        return tin[v] <= tin[u] && tin[v] + sz[v] > tin[u];
+    }
+
+    // TODO: if you need more functions (get, update on path), take from regular hld
 
     // 0-based
     void init(vector<tuple<int, int, int>> const &edges, int root_) {
@@ -502,13 +539,14 @@ struct HLD {
             hid.assign(n, 0);
             hpos.assign(n, 0);
             tin.assign(n, 0);
-            hseg.assign(n, {-1, -1});
+            hseg.assign(n, {0, -1});
             hpath.assign(n, {});
             p.assign(n, -1);
+            p_edge.assign(n, 0);
             h.assign(n, 0);
             sz.assign(n, 0);
-            light_id.assign(n, -1);
             hei.assign(n, 0);
+            light_id.assign(n, -1);
             light_sons.init(n);
 
             // TODO what you need
@@ -519,5 +557,6 @@ struct HLD {
         tree.init(n);
 
         // TODO: O(n) init can be done here
+        // TODO: fill other vectors you need (col and others)
     }
 };

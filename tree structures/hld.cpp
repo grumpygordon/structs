@@ -1,6 +1,5 @@
-// can only modify one node
-// modify on path is doable (light_sons.set(v, 0) with lazy propagation, same with tree.modify(l, r))
-// modify on subtree is ochen slogno
+// get on path and subtree, modify in point, change one edge
+// can do modify on subtree and paths (add lazy segtree instead of segtree)
 
 // you can init in O(n) cherez gopu (everything you need exists)
 struct HLD {
@@ -24,7 +23,7 @@ struct HLD {
         void update(const heavy_item &first, const heavy_item &second) {
             // dont delete, required
             edge = first.edge;
-            sum = first.sum + edge + second.sum;
+            sum = first.sum + second.edge + second.sum;
 
             // use it
             int e = second.edge;
@@ -417,7 +416,7 @@ struct HLD {
             hid.assign(n, 0);
             hpos.assign(n, 0);
             tin.assign(n, 0);
-            hseg.assign(n, {-1, -1});
+            hseg.assign(n, {0, -1});
             hpath.assign(n, {});
             p.assign(n, -1);
             p_edge.assign(n, 0);
