@@ -7,18 +7,34 @@ struct HLD {
 
     // heavy_item for heavy path
     struct heavy_item {
-        // TODO example below
-        // l = min -h[v]
-        // r = min +h[v]
-        int l = inf, r = inf, ans = inf;
+        // edge to the left, required at update
+        int edge = 0;
+        // sum of edges in segment, required at update
+        ll sum = 0;
 
-        template<typename T>
-        void init(const T &t, int, int) {
-            // TODO
+        // TODO example below
+        // l = closest to left
+        // r = closest to right
+        ll l = inf, r = inf, ans = inf;
+
+        void init(const heavy_item &t, int, int) {
+            *this = t;
         }
 
         void update(const heavy_item &first, const heavy_item &second) {
-            // TODO
+            // dont delete, required
+            edge = first.edge;
+            sum = first.sum + edge + second.sum;
+
+            // use it
+            int e = second.edge;
+
+            // TODO example below
+            ans = min(first.ans, second.ans);
+            setmin(ans, first.r + second.l + e);
+
+            l = min(first.l, first.sum + e + second.l);
+            r = min(second.r, second.sum + e + first.r);
         }
 
         static heavy_item merge(const heavy_item &first, const heavy_item &second) {
@@ -27,15 +43,6 @@ struct HLD {
             return res;
         }
     };
-
-    void add_edge(int v, heavy_item &w) {
-        // add edge v->p[v] on top of w
-        // w comes from v
-        assert(v != root);
-
-        int len = hei[v] - hei[p[v]];
-        // TODO
-    }
 
     struct HLD_segtree {
 
@@ -129,16 +136,14 @@ struct HLD {
             t = segtree{n};
         }
 
-        template<typename T>
-        void init(vector<T> const &q) {
-            vector<T> g(q.size());
+        void init(vector<heavy_item> const &q) {
+            vector<heavy_item> g(q.size());
             for (int i = 0; i < q.size(); i++)
                 g[tin[i]] = q[i];
             t.build(g);
         }
 
-        template<typename T>
-        void init_heavy_path(int v, vector<T> const &q) {
+        void init_heavy_path(int v, vector<heavy_item> const &q) {
             // v - id of path (also root)
             assert(hid[v] == v);
             assert(q.size() == hseg[v].sc - hseg[v].fr + 1);
@@ -146,8 +151,7 @@ struct HLD {
                 t.set(hseg[v].fr + i, q[i]);
         }
 
-        template<typename T>
-        void modify(int v, T const &w) {
+        void modify(int v, heavy_item const &w) {
             t.set(tin[v], w);
         }
 
@@ -212,6 +216,9 @@ struct HLD {
     // p[i] - parent
     vector<int> p;
 
+    // weight of edge to parent
+    vector<int> p_edge;
+
     // sons, no parent
     vector<vector<pair<int, int>>> e;
 
@@ -230,6 +237,7 @@ struct HLD {
         for (auto[i, hlen] : e[v]) {
             h[i] = h[v] + 1;
             hei[i] = hei[v] + hlen;
+            p_edge[i] = hlen;
             calcsz(i, v);
             sz[v] += sz[i];
         }
@@ -266,19 +274,25 @@ struct HLD {
             }
             w = heavy_item::merge(tree.get_path(hid[u], u), w);
             u = hid[u];
-            add_edge(u, w);
             u = p[u];
         }
     }
 
+
+    // TODO for get_path query
+    // TODO implement only one of two functions below and choose appropriate in get_path
+    void reverse_item(heavy_item const &w) {
+        // reverse path of item w
+        // w.edge doesnt matter (it is not used further)
+        // TODO
+        assert(0);
+    }
+    
     auto merge_verticals(int v, heavy_item const &a, heavy_item const &b) {
         // two vertical paths a and b end on the same node (node is not shared, only in a)
         // b might be empty
-        // TODO example below
-        int ans = min(a.ans, b.ans);
-        if (a.r != inf && b.r != inf)
-            setmin(ans, a.r + b.r - 2 * (int)hei[v]);
-        return ans;
+        // else b.edge is edge to v
+        // TODO
         // returns answer to your task
     }
 
@@ -287,6 +301,8 @@ struct HLD {
             swap(v, u);
         heavy_item w{};
         if (anc(v, u)) {
+            // TODO case with vertical path
+            //  if merging empty path is hard, you can use this place instead
             // v is lca of u
             swap(u, v);
         } else {
@@ -294,12 +310,20 @@ struct HLD {
                 assert(tin[hid[u]] > tin[v]);
                 w = heavy_item::merge(tree.get_path(hid[u], u), w);
                 u = hid[u];
-                add_edge(u, w);
                 u = p[u];
             }
         }
         // u is lca of v
-        return merge_verticals(u, get_vertical(u, v), w);
+        auto x = get_vertical(u, v);
+        reverse_item(x);
+        return heavy_item::merge(x, w);
+        // TODO if reversing is hard, merge by hand
+        // x is path lca .. v
+        // w is path lca->u ... u (or empty)
+        // paths dont intersect, w.edge is edge to lca
+
+        // variable u is lca
+        // return merge_verticals(u, x, w);
     }
 
     auto get_subtree(int v) {
@@ -310,10 +334,32 @@ struct HLD {
     // TODO col or what you need
     vector<int> col;
 
+    void fix_node(int v) {
+        // get item from node v
+        heavy_item w{};
+        w.edge = p_edge[v];
+
+        // TODO fill remaining values
+
+        // dont change
+        tree.modify(v, w);
+    }
+
+    void change_edge(int v, int u, int w) {
+        if (tin[v] > tin[u])
+            swap(v, u);
+        assert(p[u] == v);
+        p_edge[u] = w;
+        fix_node(u);
+    }
+
     template<typename T>
     void change_node(int v, T const &color) {
         // TODO example below
-        tree.modify(v, make_pair(color, hei[v]));
+        col[v] = color;
+
+        // dont change
+        fix_node(v);
     }
 
     bool anc(int v, int u) {
@@ -374,6 +420,7 @@ struct HLD {
             hseg.assign(n, {-1, -1});
             hpath.assign(n, {});
             p.assign(n, -1);
+            p_edge.assign(n, 0);
             h.assign(n, 0);
             sz.assign(n, 0);
             hei.assign(n, 0);
@@ -386,5 +433,6 @@ struct HLD {
         tree.init(n);
 
         // TODO: O(n) init can be done here
+        // TODO: fill other vectors you need (col and others)
     }
 };
