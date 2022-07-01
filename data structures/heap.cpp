@@ -14,13 +14,16 @@ bool operator<(X a, X b) {
     return a.w < b.w;
 }
 
+struct heap;
+
+using ptr = heap*;
+
 struct heap {
     X w;
     int h;
-    heap *l, *r;
+    ptr l = nullptr, r = nullptr;
     heap(X w_) {
         w = w_;
-        l = r = 0;
         h = 1;
     }
 };
@@ -32,26 +35,24 @@ ptr create(X w) {
 }
 
 ptr merge(ptr t1, ptr t2) {
-    if (t1 == 0 && t2 == 0)
-        return 0;
-    if (t1 == 0)
+    if (t1 == nullptr)
         return t2;
-    if (t2 == 0)
+    if (t2 == nullptr)
         return t1;
     if (t2->w < t1->w)
         swap(t1, t2);
     ptr z = new heap(*t1);
     z->r = merge(t1->r, t2);
-    if (z->l == 0 || z->l->h < z->r->h)
+    if (z->l == nullptr || z->l->h < z->r->h)
         swap(z->l, z->r);
-    z->h = 1 + (z->r == 0 ? 0 : z->r->h);
+    z->h = 1 + (z->r == nullptr ? 0 : z->r->h);
     return z;
 }
 
 ptr pop(ptr t) {
-    if (t != 0)
+    if (t != nullptr)
         return merge(t->l, t->r);
-    return 0;
+    return nullptr;
 }
 
 ptr push(ptr t, X w) {
