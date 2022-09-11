@@ -1,4 +1,7 @@
 
+// prefix hash - p[k] = x^{k-1} * a[0] + x^{k-2} * a[1] + .. + a[k - 1]
+
+// substring hash - x^{len-1} * a[l] + x^{len-2} * a[l + 1] + .. + a[r]
 struct Hasher {
 
     const int X = 1e6 + 3, md = 1e9 + 993;
@@ -27,7 +30,8 @@ struct Hasher {
         return x;
     }
 
-    int concat(int h1, int h2, int l2) {
+    // h1 * x^{len2} + h2
+    int concat(int h1, int h2, int len2) {
         return (h1 * (ll)g[l2] + h2) % md;
     }
 };
