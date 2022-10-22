@@ -1,6 +1,9 @@
 //find k smallest paths from s to t in digraph
 //O(nlogn+klogk)
 
+// if weights>=0, then dijkstra will do the work
+// otherwise provide topsort order
+
 struct X {
     ll w;
     int to;
@@ -58,7 +61,7 @@ struct edge {
     int to, w, i;
 };
 
-vector<ll> solve(vector<vector<pair<int, int>>> e_, int k, int s = 0, int t = -1) {
+vector<ll> solve(vector<vector<pair<int, int>>> e_, int k, int s = 0, int t = -1, vector<int> order = {}) {
     // (to, w)
     int n = e_.size();
     if (t == -1)
@@ -79,20 +82,45 @@ vector<ll> solve(vector<vector<pair<int, int>>> e_, int k, int s = 0, int t = -1
     vector<int> prr(n, -1);
     {
         ds[t] = 0;
-        priority_queue<pair<ll, int>, vector<pair<ll, int>>, greater<pair<ll, int>>> que;
-        que.push({0, t});
-        while (!que.empty()) {
-            auto [w, v] = que.top();
-            que.pop();
-            if (w != ds[v])
-                continue;
-            for (auto i : eo[v])
-                if (ds[i.to] > ds[v] + i.w) {
-                    ds[i.to] = ds[v] + i.w;
-                    par[i.to] = i.i;
-                    prr[i.to] = v;
-                    que.push({ds[i.to], i.to});
-                }
+        if (order.empty()) {
+            for (int i = 0; i < n; i++)
+                for (auto s : e[i])
+                    assert(s.w >= 0);
+            priority_queue<pair<ll, int>, vector<pair<ll, int>>, greater<pair<ll, int>>> que;
+            que.push({0, t});
+            while (!que.empty()) {
+                auto [w, v] = que.top();
+                que.pop();
+                if (w != ds[v])
+                    continue;
+                for (auto i: eo[v])
+                    if (ds[i.to] > ds[v] + i.w) {
+                        ds[i.to] = ds[v] + i.w;
+                        par[i.to] = i.i;
+                        prr[i.to] = v;
+                        que.push({ds[i.to], i.to});
+                    }
+            }
+        } else {
+            assert(order.size() == n);
+            vector<int> ob(n);
+            for (int i = 0; i < n; i++)
+                ob[order[i]] = i;
+            for (int i = 0; i < n; i++)
+                for (auto s : e[i])
+                    assert(ob[i] < ob[s.to]);
+
+            reverse(all(order));
+            for (int v : order)
+            if (ds[v] != llinf) {
+                for (auto i: eo[v])
+                    if (ds[i.to] > ds[v] + i.w) {
+                        ds[i.to] = ds[v] + i.w;
+                        par[i.to] = i.i;
+                        prr[i.to] = v;
+                    }
+
+            }
         }
     }
     vector<vector<int>> ces(n);
