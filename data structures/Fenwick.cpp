@@ -8,6 +8,14 @@ struct Fen {
         fill(q.begin(), q.end(), 0);
     }
 
+    void addup() {
+        for (int i = 0; i < n; i++) {
+            int j = (i | (i + 1));
+            if (j < n)
+                q[j] += q[i];
+        }
+    }
+
     void inc(int i, Val w) {
         for (; i < n; i = (i | (i + 1)))
             q[i] += w;
@@ -21,8 +29,10 @@ struct Fen {
     }
 
     Val get(int l, int r) {
-        setmax(l, 0);
-        setmin(r, n - 1);
+        if (l < 0)
+            l = 0;
+        if (r >= n)
+            r = n - 1;
         if (l > r)
             return 0;
         return get(r) - get(l - 1);
@@ -40,7 +50,7 @@ struct Fen {
                 x -= q[res - 1];
             }
             k /= 2;
-        } 
+        }
         return res;
     }
 };
